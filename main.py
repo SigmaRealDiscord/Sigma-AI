@@ -20,6 +20,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from sigma_app.database import Base, engine, get_db
 from sigma_app.emailer import send_verification_email
 from sigma_app.models import User, EmailVerification, Conversation, Message, Memory
+from sigma_app.developer_routes import router as developers_router
+from sigma_app.ai_engine import generate_text
 from sigma_app.security import (
     create_access_token, hash_password, verify_password,
     new_verification_token, hash_token, read_access_token,
@@ -29,6 +31,7 @@ APP_URL = os.getenv("SIGMA_APP_URL", "http://localhost:8000").rstrip("/")
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Sigma AI", version="0.1.0")
+app.include_router(developers_router)
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SIGMA_AUTH_SECRET", "development-only-change-this-before-deploying"), same_site="lax", https_only=os.getenv("COOKIE_HTTPS_ONLY", "true").lower() == "true")
 app.add_middleware(
     CORSMiddleware,
@@ -51,8 +54,7 @@ class LoginInput(BaseModel):
 
 
 class ChatInput(BaseModel):
-    message: str = Field(default="", max_length=12000)
-    images: list[str] = Field(default_factory=list, max_length=4)
+    message: str = Field(min_length=1, max_length=12000)
 
 
 class RenameInput(BaseModel):
@@ -223,30 +225,21 @@ def retrieve_older_messages(db: Session, user_id: int, query: str, exclude_ids: 
 
 
 def call_model(history: list[dict], memories: list[str], recalled: list[str] | None = None) -> str:
-    base_url = os.getenv("SIGMA_AI_BASE_URL", "").strip().rstrip("/")
-    model = os.getenv("SIGMA_AI_MODEL", "").strip()
-    api_key = os.getenv("SIGMA_AI_API_KEY", "").strip()
-    if not all((base_url, model, api_key)):
-        raise HTTPException(status_code=503, detail="Sigma AI model is not configured.")
-    endpoint = base_url if base_url.endswith("/chat/completions") else base_url + "/chat/completions"
-    memory_text = "\n".join(f"- {item}" for item in memories)
-    recalled_text = "\n".join("- " + item for item in (recalled or []))
-    system = "You are Sigma AI. Reply in the user's language. Use saved memory and retrieved past messages only when relevant. Do not claim to remember information that is not in the provided context. The last 100 messages are active context; older messages are retrieved selectively from account history.\n\nSaved user memory:\n" + (memory_text or "(none)") + "\n\nRelevant older conversation excerpts:\n" + (recalled_text or "(none)")
-    payload = {"model": model, "messages": [{"role": "system", "content": system}] + history[-100:], "temperature": 0.7}
+    memory_text = "\\n".join(f"- {item}" for item in memories)
+    recalled_text = "\\n".join("- " + item for item in (recalled or []))
+    system = (
+        "You are Sigma AI, a text-only assistant powered by the original Sigma-0.1B model. "
+        "Be respectful, accurate, and concise. Keep the user's chosen response language; "
+        "do not switch languages just because code, quotes, or pasted text use another language. "
+        "Only change the response language when the user clearly asks you to. "
+        "Do not claim knowledge that is not present in the conversation or your training.\\n\\n"
+        "Saved user memory:\\n" + (memory_text or "(none)") +
+        "\\n\\nRelevant older conversation excerpts:\\n" + (recalled_text or "(none)")
+    )
     try:
-        response = requests.post(endpoint, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json", "cf-aig-gateway-id": "default"}, json=payload, timeout=60)
-        response.raise_for_status()
-        answer = response.json()["choices"][0]["message"]["content"]
-        if isinstance(answer, list):
-            answer = "".join(part.get("text", "") for part in answer if isinstance(part, dict))
-        answer = str(answer or "").strip()
-        if not answer:
-            raise ValueError("Empty model response")
-        return answer
-    except requests.RequestException as exc:
-        raise HTTPException(status_code=502, detail="The AI provider could not complete the request.") from exc
-    except (KeyError, IndexError, TypeError, ValueError) as exc:
-        raise HTTPException(status_code=502, detail="The AI provider returned an invalid response.") from exc
+        return generate_text(history, system_prompt=system)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 @app.post("/api/chats/{chat_id}/messages")
@@ -254,24 +247,16 @@ def send_message(chat_id: int, data: ChatInput, user: User = Depends(get_user), 
     chat = db.scalar(select(Conversation).where(Conversation.id == chat_id, Conversation.user_id == user.id))
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found.")
-    if not data.message.strip() and not data.images:
-        raise HTTPException(status_code=422, detail="Write a message or attach an image.")
-    if any(not image.startswith("data:image/") for image in data.images):
-        raise HTTPException(status_code=422, detail="Only image attachments are supported.")
-    if any(len(image) > 7_000_000 for image in data.images):
-        raise HTTPException(status_code=413, detail="Each image must be under 5 MB.")
-    content_parts = []
-    if data.message.strip():
-        content_parts.append({"type": "text", "text": data.message.strip()})
-    content_parts.extend({"type": "image_url", "image_url": {"url": image}} for image in data.images)
-    stored_content = json.dumps(content_parts, ensure_ascii=False)
-    user_message = Message(conversation_id=chat.id, role="user", content=stored_content)
+    message_text = data.message.strip()
+    if not message_text:
+        raise HTTPException(status_code=422, detail="Write a text message.")
+    user_message = Message(conversation_id=chat.id, role="user", content=message_text)
     db.add(user_message)
     db.flush()
     recent_rows = db.scalars(select(Message).where(Message.conversation_id == chat.id).order_by(Message.id.desc()).limit(100)).all()
-    history = [{"role": m.role, "content": _model_content(m.content)} for m in reversed(recent_rows)]
+    history = [{"role": m.role, "content": _display_content(m.content)} for m in reversed(recent_rows)]
     memories = db.scalars(select(Memory).where(Memory.user_id == user.id).order_by(Memory.created_at.desc()).limit(50)).all()
-    recalled = retrieve_older_messages(db, user.id, data.message.strip(), {m.id for m in recent_rows})
+    recalled = retrieve_older_messages(db, user.id, message_text, {m.id for m in recent_rows})
     try:
         answer = call_model(history, [m.content for m in memories], recalled)
     except Exception:
@@ -279,7 +264,7 @@ def send_message(chat_id: int, data: ChatInput, user: User = Depends(get_user), 
         raise
     db.add(Message(conversation_id=chat.id, role="assistant", content=answer))
     if chat.title == "New chat":
-        chat.title = data.message.strip()[:60]
+        chat.title = message_text[:60]
     chat.updated_at = datetime.now(timezone.utc)
     db.commit()
     return {"answer": answer}
