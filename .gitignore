@@ -5,3 +5,9 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+
+data/
+artifacts/
+checkpoints/
+*.pt
+*.pth
