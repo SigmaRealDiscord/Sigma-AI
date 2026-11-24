@@ -1,0 +1,18 @@
+{
+  "name": "Sigma AI",
+  "short_name": "Sigma AI",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#212121",
+  "theme_color": "#212121",
+  "description": "Your Sigma AI chat workspace",
+  "icons": [
+    {
+      "src": "/sigma-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
