@@ -1,18 +1,21 @@
 # Sigma AI
 
-Sigma AI is a standalone, responsive web app. It is intentionally separated from the Discord bot repository and does not modify or depend on the bot.
+Sigma AI is a standalone, text-only assistant application. The repository also contains the separate Sigma Developers portal and the original Sigma-0.1B model training code.
 
-## Included features
+## Project structure
 
-- Responsive English chat interface for mobile and desktop
-- Email/password registration with one-time email verification
-- Login/logout and signed sessions
-- User-owned conversations with persistent message history
-- Chat search, rename, and delete
-- Image attachments and multimodal model requests
-- Separate saved-memory notes (add/list/delete)
-- Last 100 messages as active context
-- Keyword retrieval from up to 2,000 older messages across the user's conversations
+- `main.py` — FastAPI application and chat history.
+- `sigma_app/` — account registration, email verification, chat history, memory, Developer portal, API-key management.
+- `sigma_model/` — custom decoder-only Transformer, UTF-8 byte tokenizer, and from-scratch training script.
+- `sigma_app/developers.html` — separate Sigma Developers web portal at `/developers`.
+
+## Sigma-0.1B status
+
+The model code is a **from-scratch training prototype**, not a finished or trained assistant. It initializes random weights and does not download or call Gemini, OpenAI, Qwen, Llama, or another pretrained model. A model checkpoint must be trained and deployed before chat or API inference can work.
+
+The initial tokenizer is a custom UTF-8 byte tokenizer. It can encode all Unicode scripts, but it is not yet an optimized learned multilingual tokenizer. Supporting 100 languages in the tokenizer does not guarantee good language ability: that requires a large, balanced, legally usable corpus and extensive training/evaluation.
+
+See [sigma_model/README.md](sigma_model/README.md) for training instructions.
 
 ## Run locally
 
@@ -25,31 +28,48 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-Open `http://localhost:8000`. For local development, SQLite is used if `DATABASE_URL` is omitted.
+Open `http://localhost:8000` for Sigma AI and `http://localhost:8000/developers` for Sigma Developers.
 
-## Required environment variables
+## Environment variables
 
-- `SIGMA_AI_API_KEY` — model provider API key
-- `SIGMA_AI_BASE_URL` — OpenAI-compatible API base URL
-- `SIGMA_AI_MODEL` — model identifier
-- `SIGMA_AUTH_SECRET` — long, random signing secret; never commit it
-- `DATABASE_URL` — PostgreSQL connection URL for persistent production data
-- `SIGMA_APP_URL` — public HTTPS URL used in verification links
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` — outgoing email configuration
-- `COOKIE_HTTPS_ONLY` — keep `true` in production; set `false` only for local HTTP development
-- `SIGMA_ALLOWED_ORIGINS` — optional comma-separated CORS allowlist if a separate frontend origin is used
+Required for production:
 
-Do not put secrets in source files, GitHub commits, or frontend JavaScript. Set them in the hosting provider's secret/environment-variable settings.
+- `SIGMA_AUTH_SECRET` — long random session-signing secret.
+- `DATABASE_URL` — PostgreSQL connection URL; SQLite fallback is for local development only.
+- `SIGMA_APP_URL` — public HTTPS URL used in email verification links.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` — email delivery.
+- `COOKIE_HTTPS_ONLY=true` — secure cookies in production.
+- `SIGMA_MODEL_CHECKPOINT` — optional path to the trained Sigma checkpoint; default is `artifacts/sigma-0.1b.pt`.
+- `SIGMA_OWNER_EMAIL` — verified email address assigned the Owner role.
+- `SIGMA_ADMIN_EMAILS` — comma-separated verified email addresses assigned Admin role.
 
-## Deploy
+Do not commit secrets to GitHub or put them in frontend JavaScript. Set them in the hosting provider's environment-variable settings. Owner/Admin roles are assigned server-side only after email verification; a user cannot grant themselves a role.
 
-The included `Procfile` starts the FastAPI web service with the platform-provided `PORT`. Attach a persistent PostgreSQL database and configure the environment variables above before enabling public signups.
+## Sigma API
 
-## Security and production notes
+Create an account, verify its email, then open Sigma Developers and create an API key. The raw key is displayed once; only its SHA-256 hash is stored. Users can list and revoke only their own keys.
 
-- The SQLite fallback is for development only; use managed PostgreSQL for production.
-- Use a unique random `SIGMA_AUTH_SECRET` in production.
-- Email verification links are single-use and expire after 30 minutes.
-- Passwords are stored as PBKDF2-HMAC-SHA256 hashes.
-- Restrict access to the database and keep provider credentials server-side.
-- Review provider limits, image-size limits, and abuse protections before opening registration publicly.
+The text-only endpoint is:
+
+```http
+POST /v1/chat/completions
+Authorization: Bearer sigma_sk_live_...
+Content-Type: application/json
+```
+
+Example body:
+
+```json
+{
+  "model": "sigma-0.1b",
+  "messages": [
+    {"role": "user", "content": "Hi"}
+  ]
+}
+```
+
+There is no third-party AI provider key in this design. API keys authorize access to Sigma's own endpoint; they are not model weights and are not embedded in Sigma-0.1B.
+
+## Important deployment note
+
+A roughly 100M-parameter model needs substantial RAM and compute for inference, and training requires much more GPU compute. A normal lightweight web worker is not a training cluster. Keep the web/API service and model training/inference capacity separate if the chosen host cannot run the model. No trained weights are committed to this repository.
