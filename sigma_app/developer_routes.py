@@ -62,6 +62,7 @@ class CompletionInput(BaseModel):
     model: str = "sigma-0.1b"
     messages: list[APIMessage] = Field(min_length=1, max_length=40)
     max_tokens: int = Field(default=240, ge=1, le=512)
+    response_language: str = Field(default="auto", max_length=40)
 
 
 @router.get("/developers")
@@ -142,7 +143,7 @@ def chat_completions(data: CompletionInput, request: Request, db: Session = Depe
         raise HTTPException(status_code=404, detail="Unknown Sigma model.")
     messages = [item.model_dump() for item in data.messages]
     try:
-        answer = generate_text(messages, system_prompt="You are Sigma AI. Be helpful, accurate, respectful, and text-only.", max_new_tokens=data.max_tokens)
+        answer = generate_text(messages, system_prompt=("You are Sigma AI. Be helpful, accurate, respectful, and text-only. " + (f"Keep the response language locked to {data.response_language}." if data.response_language.lower() != "auto" else "Infer the user's normal conversation language from context, not from code or quotations.")), max_new_tokens=data.max_tokens)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     key.request_count += 1
