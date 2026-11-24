@@ -7,8 +7,6 @@ import re
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Generator
-
-import requests
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
