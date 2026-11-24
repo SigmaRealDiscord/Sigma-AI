@@ -224,16 +224,22 @@ def retrieve_older_messages(db: Session, user_id: int, query: str, exclude_ids: 
 
 
 def call_model(history: list[dict], memories: list[str], recalled: list[str] | None = None, response_language: str = "auto") -> str:
-    memory_text = "\\n".join(f"- {item}" for item in memories)
-    recalled_text = "\\n".join("- " + item for item in (recalled or []))
+    memory_text = "\n".join(f"- {item}" for item in memories)
+    recalled_text = "\n".join("- " + item for item in (recalled or []))
+    language_rule = (
+        f"Keep the response language locked to {response_language}. "
+        if response_language and response_language.lower() != "auto"
+        else "Infer the user's normal conversation language from context, not from code or quotations. "
+    )
     system = (
         "You are Sigma AI, a text-only assistant powered by the original Sigma-0.1B model. "
         "Be respectful, accurate, and concise. Keep the user's chosen response language; "
         "do not switch languages just because code, quotes, or pasted text use another language. "
         "Only change the response language when the user clearly asks you to. "
-        "Do not claim knowledge that is not present in the conversation or your training.\\n\\n"
-        "Saved user memory:\\n" + (memory_text or "(none)") +
-        "\\n\\nRelevant older conversation excerpts:\\n" + (recalled_text or "(none)")
+        + language_rule
+        + "Do not claim knowledge that is not present in the conversation or your training.\n\n"
+        + "Saved user memory:\n" + (memory_text or "(none)")
+        + "\n\nRelevant older conversation excerpts:\n" + (recalled_text or "(none)")
     )
     try:
         return generate_text(history, system_prompt=system)
