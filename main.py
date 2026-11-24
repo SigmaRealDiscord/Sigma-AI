@@ -53,6 +53,7 @@ class LoginInput(BaseModel):
 
 class ChatInput(BaseModel):
     message: str = Field(min_length=1, max_length=12000)
+    response_language: str = Field(default="auto", max_length=40)
 
 
 class RenameInput(BaseModel):
@@ -222,7 +223,7 @@ def retrieve_older_messages(db: Session, user_id: int, query: str, exclude_ids: 
     return [item[2] for item in scored[:8]]
 
 
-def call_model(history: list[dict], memories: list[str], recalled: list[str] | None = None) -> str:
+def call_model(history: list[dict], memories: list[str], recalled: list[str] | None = None, response_language: str = "auto") -> str:
     memory_text = "\\n".join(f"- {item}" for item in memories)
     recalled_text = "\\n".join("- " + item for item in (recalled or []))
     system = (
@@ -256,7 +257,7 @@ def send_message(chat_id: int, data: ChatInput, user: User = Depends(get_user), 
     memories = db.scalars(select(Memory).where(Memory.user_id == user.id).order_by(Memory.created_at.desc()).limit(50)).all()
     recalled = retrieve_older_messages(db, user.id, message_text, {m.id for m in recent_rows})
     try:
-        answer = call_model(history, [m.content for m in memories], recalled)
+        answer = call_model(history, [m.content for m in memories], recalled, data.response_language)
     except Exception:
         db.rollback()
         raise
