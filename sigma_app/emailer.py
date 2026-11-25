@@ -2,18 +2,35 @@ from __future__ import annotations
 
 import os
 import smtplib
+import ssl
 from email.message import EmailMessage
 from html import escape
 
 
+def _setting(*names: str, default: str = "") -> str:
+    """Return the first non-empty environment variable from the supplied names."""
+    for name in names:
+        value = os.getenv(name, "").strip()
+        if value:
+            return value
+    return default
+
+
 def send_verification_email(email: str, username: str, verify_url: str) -> None:
-    host = os.getenv("SMTP_HOST", "").strip()
-    port = int(os.getenv("SMTP_PORT", "587"))
-    user = os.getenv("SMTP_USER", "").strip()
-    password = os.getenv("SMTP_PASSWORD", "")
-    sender = os.getenv("SMTP_FROM", user).strip()
+    # Gmail SMTP: implicit TLS on 465, STARTTLS on 587.
+    # Support common aliases so existing Render secrets can be reused.
+    host = _setting("SMTP_HOST", default="smtp.gmail.com")
+    port = int(_setting("SMTP_PORT", default="465"))
+    user = _setting("SMTP_USER", "SMTP_EMAIL", "GMAIL_USER", "GMAIL_EMAIL")
+    password = _setting("SMTP_PASSWORD", "GMAIL_APP_PASSWORD", "GMAIL_PASSWORD")
+    sender = _setting("SMTP_FROM", "SMTP_SENDER", "SMTP_EMAIL", "GMAIL_EMAIL", default=user)
+
     if not all((host, user, password, sender)):
-        raise RuntimeError("Email delivery is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD and SMTP_FROM.")
+        raise RuntimeError(
+            "Email delivery is not configured. Set SMTP_USER (or SMTP_EMAIL), "
+            "SMTP_PASSWORD (or GMAIL_APP_PASSWORD), and optionally SMTP_HOST, "
+            "SMTP_PORT and SMTP_FROM."
+        )
 
     safe_name = escape(username)
     safe_url = escape(verify_url, quote=True)
@@ -39,7 +56,16 @@ def send_verification_email(email: str, username: str, verify_url: str) -> None:
         <p>— Sigma AI Team</p></body></html>""",
         subtype="html",
     )
-    with smtplib.SMTP(host, port, timeout=20) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)
-        smtp.send_message(message)
+
+    tls_context = ssl.create_default_context()
+    if port == 465:
+        with smtplib.SMTP_SSL(host, port, timeout=20, context=tls_context) as smtp:
+            smtp.login(user, password)
+            smtp.send_message(message)
+    else:
+        with smtplib.SMTP(host, port, timeout=20) as smtp:
+            smtp.ehlo()
+            smtp.starttls(context=tls_context)
+            smtp.ehlo()
+            smtp.login(user, password)
+            smtp.send_message(message)
