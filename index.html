@@ -1,26 +1,113 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101323">
-  <title>Sigma AI</title>
-  <style>
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 50% 20%,#26345f 0,#101323 55%);color:#f5f7ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
-    main{width:min(680px,90%);text-align:center;padding:56px 28px;border:1px solid #ffffff20;border-radius:24px;background:#ffffff09;backdrop-filter:blur(12px)}
-    .logo{width:72px;height:72px;margin:0 auto 22px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,#6d8cff,#9b65ff);font-size:34px;font-weight:800}
-    h1{font-size:clamp(2.4rem,8vw,4.5rem);margin:0;letter-spacing:-.06em}p{color:#b9c2df;line-height:1.7;font-size:1.05rem}.tag{display:inline-block;margin-top:18px;padding:9px 15px;border:1px solid #879cff66;border-radius:999px;color:#cbd5ff;font-size:.9rem}
-    footer{margin-top:34px;color:#7f89a8;font-size:.82rem}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b12">
+<meta name="description" content="Sigma AI — a new space for ideas, conversations and intelligent tools.">
+<title>Sigma AI — Your AI space</title>
+<style>
+:root{color-scheme:dark;--bg:#090b12;--panel:#10131e;--panel2:#151a29;--line:#ffffff12;--text:#f4f6ff;--muted:#929bb4;--accent:#8b7cff;--accent2:#5e8bff;--good:#70d6ae;--radius:18px}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,textarea{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.app{min-height:100dvh;display:grid;grid-template-columns:260px minmax(0,1fr);background:radial-gradient(ellipse at 75% -10%,#28234d55,transparent 45%),var(--bg)}
+.sidebar{height:100dvh;position:sticky;top:0;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;background:#0d1019d9;backdrop-filter:blur(18px);z-index:5}
+.brand{display:flex;align-items:center;gap:12px;padding:2px 8px 25px}.brand-mark{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(140deg,#8c7dff,#4c79e9);font-size:22px;font-weight:850;box-shadow:0 8px 28px #6e67ff35}.brand-name{font-weight:750;letter-spacing:-.4px;font-size:17px}.brand-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.new-chat{width:100%;border:1px solid #8e83ff55;background:linear-gradient(110deg,#7467ed25,#4c79e91c);border-radius:13px;padding:12px 14px;text-align:left;display:flex;align-items:center;gap:10px;font-weight:650}.new-chat:hover{background:#8175ff2e}.plus{font-size:20px;color:#b9b1ff}
+.nav-label{font-size:10px;letter-spacing:1.5px;color:#717b95;font-weight:750;padding:26px 10px 10px}.nav{display:grid;gap:5px}.nav button,.history button{border:0;background:transparent;color:#aeb6cc;padding:10px 11px;border-radius:11px;text-align:left;display:flex;align-items:center;gap:11px;font-size:13px}.nav button:hover,.history button:hover,.nav button.active{background:#ffffff0b;color:#fff}.nav button.active{box-shadow:inset 2px 0 #9b8cff}.ico{width:18px;text-align:center;font-size:16px;color:#a7a0ff}.history{display:grid;gap:3px}.history button{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#8993aa}.side-bottom{margin-top:auto}.plan-card{padding:13px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(140deg,#171b2c,#111522)}.plan-title{font-size:12px;font-weight:700}.plan-copy{font-size:11px;color:var(--muted);line-height:1.5;margin:6px 0 10px}.upgrade{border:0;background:#8074ff20;color:#c7c0ff;padding:7px 10px;border-radius:9px;font-size:11px;font-weight:700}
+.profile{display:flex;align-items:center;gap:10px;padding:16px 5px 0}.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(140deg,#786df0,#3c80bd);display:grid;place-items:center;font-size:13px;font-weight:800}.profile-name{font-size:12px;font-weight:650}.profile-state{font-size:10px;color:var(--muted);margin-top:2px}.profile-more{margin-left:auto;color:#8790a7}
+.main{min-width:0;display:flex;flex-direction:column;min-height:100dvh}.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,52px);border-bottom:1px solid var(--line);background:#090b1280;backdrop-filter:blur(16px);position:sticky;top:0;z-index:4}.top-left{display:flex;align-items:center;gap:12px}.crumb{font-size:13px;color:#d7dbeb}.crumb span{color:var(--muted)}.top-actions{display:flex;align-items:center;gap:10px}.status{display:flex;align-items:center;gap:7px;color:#a4adc2;font-size:11px}.dot{width:7px;height:7px;background:var(--good);border-radius:50%;box-shadow:0 0 12px #70d6ae88}.top-btn{border:1px solid var(--line);background:#ffffff08;border-radius:10px;padding:8px 12px;font-size:12px;color:#cbd1e1}.top-btn.primary{border:0;background:linear-gradient(120deg,#8174ff,#5e8bff);color:#fff;font-weight:700;padding:9px 15px}
+.content{width:min(100%,1050px);margin:0 auto;padding:clamp(30px,6vh,68px) clamp(18px,5vw,60px) 100px;flex:1}.welcome{text-align:center;margin:12px auto 38px;max-width:700px}.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid #9287ff40;border-radius:99px;color:#c5beff;background:#877aff12;font-size:11px;font-weight:650;letter-spacing:.2px}.eyebrow i{width:6px;height:6px;border-radius:50%;background:#a99cff;box-shadow:0 0 12px #a99cff}.welcome h1{font-size:clamp(34px,5vw,57px);letter-spacing:-2.7px;line-height:1.07;margin:22px 0 13px;font-weight:780}.gradient{background:linear-gradient(100deg,#b4aaff,#7caaff 55%,#80d8e9);background-clip:text;-webkit-background-clip:text;color:transparent}.welcome p{margin:0;color:#9ca6bd;font-size:14px;line-height:1.7}
+.composer-wrap{max-width:760px;margin:0 auto}.composer{border:1px solid #7770c94d;background:linear-gradient(145deg,#171a29,#111522);border-radius:20px;padding:15px 16px 12px;box-shadow:0 18px 70px #0005,0 0 45px #8275ff0b}.composer textarea{width:100%;resize:vertical;min-height:62px;max-height:180px;background:transparent;border:0;outline:0;color:var(--text);font-size:14px;line-height:1.6;padding:5px 4px}.composer textarea::placeholder{color:#707b95}.composer-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}.tools{display:flex;gap:7px}.tool-btn{border:1px solid var(--line);background:#ffffff06;color:#9da7bd;border-radius:9px;padding:7px 10px;font-size:11px}.tool-btn:hover{color:#fff;background:#ffffff10}.send{width:36px;height:36px;border:0;border-radius:11px;background:linear-gradient(135deg,#8a7cff,#5e8bff);font-size:17px;font-weight:800;box-shadow:0 5px 18px #766cff45}.send:disabled{opacity:.45;cursor:not-allowed}
+.hint{text-align:center;color:#707b93;font-size:10px;margin:12px 0 30px}.suggestions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:760px;margin:0 auto}.suggestion{border:1px solid var(--line);background:#ffffff05;border-radius:14px;padding:14px;text-align:left;transition:.18s}.suggestion:hover{border-color:#8b7cff70;background:#8b7cff0c;transform:translateY(-2px)}.suggestion strong{display:block;font-size:12px;margin-bottom:5px;font-weight:650}.suggestion span{display:block;font-size:11px;color:#8994ad;line-height:1.5}.suggestion .s-ico{font-size:17px;margin-bottom:9px;display:block}
+.chat-area{max-width:760px;margin:0 auto;width:100%;display:none}.chat-area.show{display:block}.welcome.hide,.suggestions.hide,.hint.hide{display:none}.message{display:flex;gap:12px;margin:22px 0;align-items:flex-start}.message .avatar{flex:0 0 32px}.message-body{min-width:0;padding-top:3px}.message-label{font-size:11px;color:#9ca6bd;margin-bottom:7px;font-weight:700}.message-text{font-size:14px;line-height:1.75;color:#e0e4f1;white-space:pre-wrap;overflow-wrap:anywhere}.message.user{flex-direction:row-reverse}.message.user .message-body{background:#191d2d;border:1px solid var(--line);padding:12px 15px;border-radius:15px 4px 15px 15px;max-width:85%}.message.user .message-label{text-align:right}.message.ai .avatar{background:linear-gradient(140deg,#8174ff,#5688ed)}
+.chat-compose{position:sticky;bottom:18px;margin-top:28px}.chat-compose .composer{background:#121625f2;backdrop-filter:blur(20px)}
+.footer-note{text-align:center;color:#626d84;font-size:10px;margin-top:36px}
+.page{display:none}.page.active{display:block}.section-head{margin:12px 0 28px}.section-head h2{font-size:28px;letter-spacing:-1px;margin:0 0 8px}.section-head p{font-size:13px;color:var(--muted);margin:0;line-height:1.6}.feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.feature{border:1px solid var(--line);background:#ffffff05;border-radius:16px;padding:20px}.feature-icon{font-size:22px;margin-bottom:15px}.feature h3{font-size:14px;margin:0 0 7px}.feature p{font-size:12px;color:var(--muted);line-height:1.6;margin:0}
+.settings-card{max-width:650px;border:1px solid var(--line);border-radius:16px;background:#ffffff05;padding:18px;margin-bottom:12px}.settings-card h3{font-size:13px;margin:0 0 14px}.setting-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid var(--line);font-size:12px;color:#c4cadd}.setting-row small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.toggle{width:38px;height:21px;border:0;border-radius:99px;background:#343b50;padding:3px;text-align:left}.toggle:after{content:"";display:block;width:15px;height:15px;background:#fff;border-radius:50%;transition:.2s}.toggle.on{background:#776cf0}.toggle.on:after{transform:translateX(17px)}
+.overlay{position:fixed;inset:0;background:#03050bd9;backdrop-filter:blur(9px);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.overlay.open{display:flex}.modal{width:min(100%,420px);border:1px solid #ffffff1c;border-radius:22px;background:linear-gradient(150deg,#191d2e,#10131e);padding:27px;box-shadow:0 30px 100px #0009;position:relative}.close{position:absolute;right:17px;top:16px;border:0;background:#ffffff0c;border-radius:9px;width:30px;height:30px;color:#aab3c8}.modal-logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(140deg,#8c7dff,#4c79e9);display:grid;place-items:center;font-size:24px;font-weight:850;margin-bottom:20px}.modal h2{font-size:23px;letter-spacing:-.7px;margin:0 0 8px}.modal p{font-size:12px;color:var(--muted);line-height:1.6;margin:0 0 21px}.field-label{display:block;font-size:11px;color:#c6cce0;margin:13px 0 7px}.field{width:100%;border:1px solid #ffffff20;background:#0b0e17;color:#fff;border-radius:11px;padding:12px 13px;font-size:13px}.modal-submit{width:100%;margin-top:17px;border:0;border-radius:11px;background:linear-gradient(120deg,#8174ff,#5e8bff);padding:12px;font-size:12px;font-weight:750}.modal-switch{text-align:center!important;margin:16px 0 0!important}.text-btn{border:0;background:none;color:#b6acff;font-size:12px;padding:0}.notice{font-size:10px;color:#8590a9;line-height:1.6;margin-top:13px}.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#20263a;border:1px solid #ffffff20;color:#e9ecf8;padding:11px 16px;border-radius:12px;font-size:12px;z-index:30;transition:.25s;max-width:calc(100% - 30px);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+.mobile-brand,.mobile-nav,.menu-btn{display:none}
+@media(max-width:850px){.app{grid-template-columns:220px minmax(0,1fr)}.sidebar{padding:18px 12px}.content{padding-left:28px;padding-right:28px}}
+@media(max-width:650px){.app{display:block}.sidebar{position:fixed;left:0;top:0;bottom:0;width:min(290px,84vw);height:100dvh;transform:translateX(-105%);transition:transform .25s;box-shadow:25px 0 70px #0009}.sidebar.open{transform:translateX(0)}.main{min-height:100dvh}.topbar{height:60px;padding:0 15px}.menu-btn{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line);background:#ffffff08;border-radius:10px;font-size:17px}.status{display:none}.top-btn{padding:8px 10px}.content{padding:34px 16px 105px}.welcome{margin:12px auto 30px}.welcome h1{letter-spacing:-1.8px;font-size:clamp(34px,10vw,48px)}.welcome p{font-size:13px}.composer{padding:12px}.composer textarea{min-height:70px;font-size:13px}.suggestions{gap:8px}.suggestion{padding:12px}.suggestion strong{font-size:11px}.suggestion span{font-size:10px}.feature-grid{grid-template-columns:1fr}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:6;justify-content:space-around;align-items:center;padding:9px 8px calc(9px + env(safe-area-inset-bottom));background:#0d1019ed;border-top:1px solid var(--line);backdrop-filter:blur(18px)}.mobile-nav button{border:0;background:none;color:#828da6;font-size:10px;display:grid;gap:4px;justify-items:center;min-width:55px}.mobile-nav button span:first-child{font-size:18px}.mobile-nav button.active{color:#c0b8ff}.footer-note{margin-top:26px}.chat-compose{bottom:76px}.message-text{font-size:13px}.section-head h2{font-size:25px}}
+@media(max-width:380px){.suggestions{grid-template-columns:1fr}.top-btn.primary{font-size:11px}.tools .tool-btn:nth-child(2){display:none}}
+</style>
 </head>
 <body>
-  <main>
-    <div class="logo">Σ</div>
-    <h1>Sigma AI</h1>
-    <p>Your AI project is taking shape.<br>One place for intelligent tools, conversations, and future innovations.</p>
-    <span class="tag">Official project website · Coming soon</span>
-    <footer>© <span id="year"></span> Sigma AI</footer>
-  </main>
-  <script>document.getElementById('year').textContent=new Date().getFullYear()</script>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><div class="brand-mark">Σ</div><div><div class="brand-name">Sigma AI</div><div class="brand-sub">Your intelligent space</div></div></div>
+  <button class="new-chat" id="newChat"><span class="plus">＋</span> New chat</button>
+  <div class="nav-label">WORKSPACE</div>
+  <nav class="nav">
+    <button class="active" data-page="chat"><span class="ico">✧</span> AI Chat</button>
+    <button data-page="explore"><span class="ico">⌘</span> Explore</button>
+    <button data-page="settings"><span class="ico">⚙</span> Settings</button>
+  </nav>
+  <div class="nav-label">RECENT</div>
+  <div class="history" id="history"><button>✧ &nbsp; Welcome to Sigma AI</button></div>
+  <div class="side-bottom">
+    <div class="plan-card"><div class="plan-title">✨ Sigma AI</div><div class="plan-copy">A new space for ideas, learning and creating.</div><button class="upgrade" id="aboutBtn">About Sigma AI ↗</button></div>
+    <div class="profile"><div class="avatar">S</div><div><div class="profile-name" id="profileName">Guest</div><div class="profile-state" id="profileState">Not signed in</div></div><span class="profile-more">···</span></div>
+  </div>
+</aside>
+<main class="main">
+  <header class="topbar"><div class="top-left"><button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button><div class="crumb" id="crumb">AI Chat <span>/ New conversation</span></div></div><div class="top-actions"><div class="status"><i class="dot"></i> Sigma AI</div><button class="top-btn" id="signInTop">Sign in</button><button class="top-btn primary" id="getStarted">Get started</button></div></header>
+  <div class="content">
+    <section class="page active" id="page-chat">
+      <div class="welcome" id="welcome"><div class="eyebrow"><i></i> A smarter space starts here</div><h1>What can we <span class="gradient">create today?</span></h1><p>Ask questions, explore ideas, write, learn and build something new.<br>Sigma AI is ready when you are.</p></div>
+      <div class="chat-area" id="chatArea"></div>
+      <div class="composer-wrap" id="mainComposer">
+        <div class="composer"><textarea id="prompt" rows="2" placeholder="Message Sigma AI..." aria-label="Message Sigma AI"></textarea><div class="composer-foot"><div class="tools"><button class="tool-btn" id="attachBtn">＋ Attach</button><button class="tool-btn" id="modeBtn">✧ Standard</button></div><button class="send" id="sendBtn" aria-label="Send message">↑</button></div></div>
+      </div>
+      <div class="hint" id="hint">Sigma AI can make mistakes. Check important information.</div>
+      <div class="suggestions" id="suggestions">
+        <button class="suggestion" data-prompt="Explain a difficult topic in simple words."><span class="s-ico">💡</span><strong>Learn something</strong><span>Make a complex topic easy to understand.</span></button>
+        <button class="suggestion" data-prompt="Help me brainstorm creative ideas for a project."><span class="s-ico">✦</span><strong>Brainstorm ideas</strong><span>Explore fresh ideas and possibilities.</span></button>
+        <button class="suggestion" data-prompt="Help me write and improve a piece of text."><span class="s-ico">✎</span><strong>Write something</strong><span>Draft, rewrite or polish your text.</span></button>
+        <button class="suggestion" data-prompt="Help me plan and organize my next project."><span class="s-ico">▦</span><strong>Plan a project</strong><span>Turn your thoughts into clear next steps.</span></button>
+      </div>
+      <div class="footer-note">© 2026 Sigma AI · Built for curious minds</div>
+    </section>
+    <section class="page" id="page-explore">
+      <div class="section-head"><h2>Explore <span class="gradient">Sigma AI</span></h2><p>Discover what you can do with your AI assistant.</p></div>
+      <div class="feature-grid">
+        <article class="feature"><div class="feature-icon">💬</div><h3>AI conversations</h3><p>Ask questions, get explanations and explore ideas in a natural conversation.</p></article>
+        <article class="feature"><div class="feature-icon">✍️</div><h3>Writing assistant</h3><p>Draft, rewrite, summarize and improve text in multiple languages.</p></article>
+        <article class="feature"><div class="feature-icon">🌍</div><h3>Multilingual</h3><p>Communicate in the language that feels right to you.</p></article>
+        <article class="feature"><div class="feature-icon">⌨️</div><h3>Sigma Keyboard</h3><p>Bring Sigma AI tools into your everyday typing experience.</p></article>
+      </div>
+    </section>
+    <section class="page" id="page-settings">
+      <div class="section-head"><h2>Settings</h2><p>Adjust your Sigma AI experience.</p></div>
+      <div class="settings-card"><h3>Appearance</h3><div class="setting-row"><div>Dark appearance<small>Use the dark Sigma AI interface.</small></div><button class="toggle on" aria-label="Dark appearance"></button></div><div class="setting-row"><div>Compact layout<small>Reduce spacing in the interface.</small></div><button class="toggle" aria-label="Compact layout"></button></div></div>
+      <div class="settings-card"><h3>Account</h3><div class="setting-row"><div>Sign-in status<small id="settingsAccount">You are using Sigma AI as a guest.</small></div><button class="text-btn" id="settingsSignIn">Sign in</button></div></div>
+      <div class="settings-card"><h3>About</h3><div class="setting-row"><div>Sigma AI<small>Independent AI project · 2026</small></div><span style="color:#8994ad;font-size:11px">Version 1.0</span></div><div class="setting-row"><div>Sigma Keyboard<small>A companion app powered by Sigma AI.</small></div><span style="color:#a99fff;font-size:11px">Companion</span></div></div>
+    </section>
+  </div>
+</main>
+</div>
+<nav class="mobile-nav" aria-label="Mobile navigation"><button class="active" data-page="chat"><span>✧</span><span>Chat</span></button><button data-page="explore"><span>⌘</span><span>Explore</span></button><button data-page="settings"><span>⚙</span><span>Settings</span></button></nav>
+<div class="overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="modal"><button class="close" id="closeAuth" aria-label="Close">×</button><div class="modal-logo">Σ</div><h2 id="authTitle">Welcome to Sigma AI</h2><p id="authDescription">Sign in or create an account to personalize your experience.</p><form id="authForm"><label class="field-label" for="emailField">Email address</label><input class="field" id="emailField" type="email" placeholder="you@example.com" autocomplete="email" required><div id="codeWrap" hidden><label class="field-label" for="codeField">6-digit verification code</label><input class="field" id="codeField" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div><button class="modal-submit" id="authSubmit" type="submit">Continue with email</button></form><p class="modal-switch" id="authSwitch">Already have an account? <button class="text-btn" id="switchAuth" type="button">Sign in</button></p><div class="notice" id="authNotice">Email verification will be enabled when the Sigma AI authentication backend is connected. No password or verification code is stored on this page.</div></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let currentPage='chat',authStep=0,authMode='signup',messages=[],chatCount=0;
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
+function navigate(page){currentPage=page;$$('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+page));$$('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('#crumb').innerHTML=({chat:'AI Chat <span>/ New conversation</span>',explore:'Explore <span>/ Discover</span>',settings:'Settings <span>/ Preferences</span>'})[page];$('#sidebar').classList.remove('open')}
+$$('[data-page]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.page)));
+$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');
+$('#newChat').onclick=()=>{messages=[];chatCount=0;$('#chatArea').innerHTML='';$('#chatArea').classList.remove('show');$('#welcome').classList.remove('hide');$('#suggestions').classList.remove('hide');$('#hint').classList.remove('hide');$('#prompt').value='';$('#crumb').innerHTML='AI Chat <span>/ New conversation</span>';navigate('chat');$('#prompt').focus()};
+function addMessage(role,text){const row=document.createElement('div');row.className='message '+(role==='user'?'user':'ai');const av=document.createElement('div');av.className='avatar';av.textContent=role==='user'?'G':'Σ';const body=document.createElement('div');body.className='message-body';const label=document.createElement('div');label.className='message-label';label.textContent=role==='user'?'You':'Sigma AI';const content=document.createElement('div');content.className='message-text';content.textContent=text;body.append(label,content);row.append(av,body);$('#chatArea').append(row);return content}
+function send(){const box=$('#prompt'),text=box.value.trim();if(!text)return; if(!messages.length){$('#welcome').classList.add('hide');$('#suggestions').classList.add('hide');$('#hint').classList.add('hide');$('#chatArea').classList.add('show');navigate('chat');}messages.push({role:'user',content:text});addMessage('user',text);box.value='';$('#crumb').innerHTML='AI Chat <span>/ Conversation</span>';const answer='Thanks for your message! The Sigma AI website interface is ready. The live AI response service will become available once the chat API is connected to the Sigma AI backend on Render.';setTimeout(()=>{messages.push({role:'assistant',content:answer});addMessage('assistant',answer);},450);chatCount++;const h=document.createElement('button');h.textContent='✧  '+(text.length>25?text.slice(0,25)+'…':text);$('#history').prepend(h);h.onclick=()=>toast('Conversation history will be connected to your account soon.');}
+$('#sendBtn').onclick=send;$('#prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+$$('.suggestion').forEach(b=>b.onclick=()=>{$('#prompt').value=b.dataset.prompt;$('#prompt').focus()});
+$('#attachBtn').onclick=()=>toast('File attachments are coming in a future update.');
+$('#modeBtn').onclick=()=>toast('Standard mode selected.');
+function openAuth(mode){authMode=mode;authStep=0;$('#authTitle').textContent=mode==='signup'?'Create your Sigma AI account':'Welcome back';$('#authDescription').textContent=mode==='signup'?'Create an account with your email address.':'Sign in with your registered email address.';$('#codeWrap').hidden=true;$('#emailField').disabled=false;$('#authSubmit').textContent='Continue with email';$('#authNotice').textContent='Email verification will be enabled when the Sigma AI authentication backend is connected. No password or verification code is stored on this page.';$('#authOverlay').classList.add('open');setTimeout(()=>$('#emailField').focus(),100)}
+$('#signInTop').onclick=()=>openAuth('signin');$('#getStarted').onclick=()=>openAuth('signup');$('#settingsSignIn').onclick=()=>openAuth('signin');$('#closeAuth').onclick=()=>$('#authOverlay').classList.remove('open');$('#authOverlay').onclick=e=>{if(e.target===$('#authOverlay'))$('#authOverlay').classList.remove('open')};
+$('#switchAuth').onclick=()=>openAuth(authMode==='signup'?'signin':'signup');
+$('#authForm').onsubmit=e=>{e.preventDefault();toast('Account verification is not connected yet. The backend API must be linked before registration can work.');};
+$('#aboutBtn').onclick=()=>{navigate('explore');toast('Welcome to Sigma AI.')};
+$$('.toggle').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
+</script>
 </body>
 </html>
