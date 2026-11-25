@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import time
 import json
 import re
 from pathlib import Path
@@ -29,6 +30,7 @@ APP_URL = os.getenv("SIGMA_APP_URL", "http://localhost:8000").rstrip("/")
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Sigma AI", version="0.1.0")
+APP_STARTED_MONOTONIC = time.monotonic()
 app.include_router(developers_router)
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SIGMA_AUTH_SECRET", "development-only-change-this-before-deploying"), same_site="lax", https_only=os.getenv("COOKIE_HTTPS_ONLY", "true").lower() == "true")
 app.add_middleware(
@@ -87,7 +89,20 @@ def home():
 
 @app.get("/health")
 def health():
-    return {"ok": True, "app": "Sigma AI"}
+    """Lightweight public health endpoint for Render and uptime monitors."""
+    uptime_seconds = max(0, int(time.monotonic() - APP_STARTED_MONOTONIC))
+    days, remainder = divmod(uptime_seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    uptime = f"{days}d {hours}h {minutes}m {seconds}s"
+    return {
+        "ok": True,
+        "app": "Sigma AI",
+        "status": "online",
+        "uptime_seconds": uptime_seconds,
+        "uptime": uptime,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @app.post("/api/auth/register", status_code=201)
