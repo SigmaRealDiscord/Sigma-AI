@@ -87,9 +87,9 @@ def home():
     return FileResponse(Path(__file__).parent / "sigma_app" / "index.html")
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
-    """Lightweight public health endpoint for Render and uptime monitors."""
+    """Public health endpoint supporting both GET and HEAD uptime checks."""
     uptime_seconds = max(0, int(time.monotonic() - APP_STARTED_MONOTONIC))
     days, remainder = divmod(uptime_seconds, 86400)
     hours, remainder = divmod(remainder, 3600)
